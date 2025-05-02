@@ -114,6 +114,15 @@ module JekyllSQlite
     end
 
     ##
+    # Iterate through all the posts in the site
+    # and generate the data from the configuration
+    def gen_posts(site)
+      site.posts.docs.each do |post|
+        gen(post.data, post)
+      end
+    end
+
+    ##
     # Generate the data from the configuration
     # Takes as input the root where the data will be attached
     # and a configuration holder, where the sqlite key can be found
@@ -135,6 +144,7 @@ module JekyllSQlite
     def generate(site)
       gen(site.data, site.config)
       gen_pages(site)
+      gen_posts(site)
     end
   end
 end
