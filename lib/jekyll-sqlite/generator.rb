@@ -113,11 +113,32 @@ module JekyllSQlite
     end
 
     ##
+    # Generate the data from a page, where `page` is of type
+    # Jekyll::Document or Jekyll::Page
+    def _gen_page(page)
+      page_data = page.data
+
+      # Inherit `sqlite` key from layout, if possible.
+      if page_data.key?("layout")
+        page_layout = @site.layouts[page_data["layout"]]
+        if page_layout.data.key?("sqlite")
+          page_data = Jekyll::Utils.deep_merge_hashes!(
+            page.data, { "sqlite" => page_layout.data["sqlite"] }
+          )
+        end
+      end
+
+      # NOTE: that page[_] is the same as page.data[_]
+      # (see Jekyll::Document and Jekyll::Convertible)
+      gen(page_data, page_data)
+    end
+
+    ##
     # Iterate through all the pages in the site
     # and generate the data from the configuration
     def gen_pages(site)
       site.pages.each do |page|
-        gen(page.data, page)
+        _gen_page(page)
       end
     end
 
@@ -126,7 +147,7 @@ module JekyllSQlite
     # and generate the data from the configuration
     def gen_posts(site)
       site.posts.docs.each do |post|
-        gen(post.data, post)
+        _gen_page(post)
       end
     end
 
