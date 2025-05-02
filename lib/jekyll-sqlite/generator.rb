@@ -71,6 +71,7 @@ module JekyllSQlite
     # Validate given configuration object
     def validate_config(config)
       return false unless config.is_a? Hash
+      return true if config.key?("inherit")
       return false unless config.key?("query")
       return false unless File.exist?(config["file"])
       return false unless config.key?("data")
@@ -90,6 +91,13 @@ module JekyllSQlite
     # Given a configuration, generate the data
     # and attach it to the given data_root
     def generate_data_from_config(root, config)
+      if config.key?("inherit")
+        site_key = config["inherit"]
+        # Replace the current `sqlite` config with the version inherited from
+        # _config.yml
+        config = @site.config["sqlite"].find { |conf| conf["data"] == site_key }
+      end
+
       key = config["data"]
       query = config["query"]
       file = config["file"]
@@ -142,6 +150,7 @@ module JekyllSQlite
     ##
     # Entrpoint to the generator, called by Jekyll
     def generate(site)
+      @site = site
       gen(site.data, site.config)
       gen_pages(site)
       gen_posts(site)
